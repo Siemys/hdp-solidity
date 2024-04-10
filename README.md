@@ -1,66 +1,55 @@
-## Foundry
+# .::. Herodotus Data Processor EVM Interface .::.
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+## Introduction
 
-Foundry consists of:
+These contracts serve as an interface for the full Herodotus Data Processor (HDP) process. The `HdpExecutionStore` contract allows you to trigger the process with a request method and authenticate the final task execution, storing valid results on-chain. To fully understand the HDP process, it is highly recommended to check the [documentation](https://docs.herodotus.dev/herodotus-docs/developers/herodotus-data-processor-hdp).
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+## Codecs
 
-## Documentation
+As all intermediate representations of the data lake and tasks should be encoded in bytes type, the HDP interface contract supports various data lakes and tasks to `encode`, `commit`, and `decode`.
 
-https://book.getfoundry.sh/
+### Datalake
 
-## Usage
+- [BlockSampledDatalakeCodecs](src/datatypes/BlockSampledDatalakeCodecs.sol)
 
-### Build
+### Task
 
-```shell
-$ forge build
+- [ComputationalTaskCodecs](src/datatypes/ComputationalTaskCodecs.sol)
+
+## Getting Started
+
+Pre-requisites:
+
+- Solidity (with solc >= 0.8.4)
+- Foundry
+
+[HdpExecutionStore](src/HdpExecutionStore.sol) is the main contract.
+
+## Deployment
+
+Make sure to have a `.env` file configured with the variables defined in `.env.example`, then run:
+
+```sh
+source .env; forge script script/HdpExecutionStore.s.sol:HdpExecutionStoreDeployer --rpc-url $DEPLOY_RPC_URL --broadcast --verify -vvvv --via-ir
 ```
 
-### Test
+## Quick Start
 
-```shell
-$ forge test
+```sh
+# Install submodules
+forge install
+
+# Build contracts
+forge build
+
+# Test
+forge test
 ```
 
-### Format
+## License
 
-```shell
-$ forge fmt
-```
+`hdp-contracts` is licensed under the [GNU General Public License v3.0](./LICENSE).
 
-### Gas Snapshots
+---
 
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+Herodotus Dev Ltd - 2024
