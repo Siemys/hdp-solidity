@@ -1,4 +1,4 @@
-# .::. Herodotus Data Processor EVM Interface .::.
+# .::. Herodotus Data Processor Solidity .::.
 
 ## Introduction
 
@@ -48,7 +48,7 @@ forge test
 
 ## License
 
-`hdp-contracts` is licensed under the [GNU General Public License v3.0](./LICENSE).
+`hdp-solidity` is licensed under the [GNU General Public License v3.0](./LICENSE).
 
 ---
 
