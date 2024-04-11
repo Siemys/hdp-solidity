@@ -41,11 +41,11 @@ contract MockSharpFactsAggregator is ISharpFactsAggregator {
 
 contract MockSharpFactsAggregator2 is ISharpFactsAggregator {
     function aggregatorState() external pure returns (AggregatorState memory) {
-        bytes32 root = 0x04864daae2e241d226314538cdb377fecc2bad426f7678ef6c02a34f9ecd44c7;
+        bytes32 root = 0x03de2fe1e67598047a8833d23335d32fd31e98e8f89f90ca650181ecfa4d2c48;
         return AggregatorState({
             poseidonMmrRoot: root,
             keccakMmrRoot: bytes32(0),
-            mmrSize: 1240698,
+            mmrSize: 1241521,
             continuableParentHash: bytes32(0)
         });
     }
@@ -300,6 +300,10 @@ contract HdpExecutionStoreTest is Test {
         bytes32[] memory computationalTasksResult = new bytes32[](1);
         computationalTasksResult[0] = bytes32(uint256(23));
 
+        assertEq(
+            computationalTasksResult[0], bytes32(0x0000000000000000000000000000000000000000000000000000000000000017)
+        );
+
         bytes32 taskResultCommitment1 = keccak256(abi.encode(taskCommitment, computationalTasksResult[0]));
 
         assertEq(taskCommitment, bytes32(0x631a92d0413783f63a6b8f8f226f6fd1ce01de4d534375e3b59555d245974954));
@@ -333,7 +337,7 @@ contract HdpExecutionStoreTest is Test {
 
         // MMR metadata
         uint256 usedMmrId = 19;
-        uint256 usedMmrSize = 1240698;
+        uint256 usedMmrSize = 1241521;
 
         // =================================
 
@@ -342,7 +346,7 @@ contract HdpExecutionStoreTest is Test {
 
         bytes32 loadRoot = hdp2.loadMmrRoot(usedMmrId, usedMmrSize);
 
-        assertEq(loadRoot, bytes32(0x04864daae2e241d226314538cdb377fecc2bad426f7678ef6c02a34f9ecd44c7));
+        assertEq(loadRoot, bytes32(0x03de2fe1e67598047a8833d23335d32fd31e98e8f89f90ca650181ecfa4d2c48));
 
         // Mocking Cairo Program, insert the fact into the registry
         bytes32 factHash = getFactHash2(
@@ -353,7 +357,7 @@ contract HdpExecutionStoreTest is Test {
             scheduledTasksBatchMerkleRootLow,
             scheduledTasksBatchMerkleRootHigh
         );
-        assertEq(factHash, bytes32(0x996c3aeafe229e255415a48971ba8fd798ddd8afd84cfd7e88a68a27bc4b2013));
+        assertEq(factHash, bytes32(0x3559742200f61d3bc40a9bf8610303229722a440fc25d1be4c50852deeaa4b70));
         factsRegistry.markValid(factHash);
         bool isValid = factsRegistry.isValid(factHash);
         assertEq(isValid, true);
