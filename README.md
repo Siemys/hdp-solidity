@@ -1,4 +1,10 @@
-# .::. Herodotus Data Processor Solidity .::.
+![](.github/readme.png)
+
+# HDP Solidity
+
+[![CI](https://github.com/HerodotusDev/hdp-solidity/actions/workflows/test.yml/badge.svg)](https://github.com/HerodotusDev/hdp-solidity/actions/workflows/test.yml)
+
+> WARNING: This codebase is experimental and has not been audited.
 
 ## Introduction
 
