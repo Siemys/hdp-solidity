@@ -1,3 +1,5 @@
+![](.github/readme.png)
+
 # HDP Solidity
 
 ![CI](https://github.com/HerodotusDev/hdp-solidity/actions/workflows/test.yml/badge.svg)
