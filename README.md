@@ -71,6 +71,27 @@ source .env; forge script script/HdpExecutionStore.s.sol:HdpExecutionStoreDeploy
 
 ## Quick Start
 
+For one time local Cairo environment:
+
+```sh
+make cairo-install
+
+```
+
+For one time local `hdp` cli executable:
+
+```sh
+cargo install --git https://github.com/HerodotusDev/hdp --locked --force
+```
+
+For the setup require to run test:
+
+```sh
+make setup
+```
+
+Now can run test from the setup above:
+
 ```sh
 # Install submodules
 forge install
