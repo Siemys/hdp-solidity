@@ -58,13 +58,9 @@ contract HdpExecutionStoreTest is Test {
     address public proverAddress = address(12);
 
     HdpExecutionStore private hdp;
-    HdpExecutionStore private hdp2;
-
     IFactsRegistry private factsRegistry;
     IAggregatorsFactory private aggregatorsFactory;
-
     ISharpFactsAggregator private sharpFactsAggregator;
-    ISharpFactsAggregator private sharpFactsAggregator2;
 
     function setUp() public {
         // Registery for facts that has been processed through SHARP
@@ -73,11 +69,11 @@ contract HdpExecutionStoreTest is Test {
         aggregatorsFactory = new MockAggregatorsFactory();
         // Mock SHARP facts aggregator
         sharpFactsAggregator = new MockSharpFactsAggregator();
-        sharpFactsAggregator2 = new MockSharpFactsAggregator2();
 
-        bytes32 programHash = 0x05b1dad6ba5140fedd92861b0b8e0cbcd64eefb2fd59dcd60aa60cc1ba7c0eab;
+        // Get program hash
+        bytes32 programHash = _getProgramHash();
+
         hdp = new HdpExecutionStore(factsRegistry, aggregatorsFactory, programHash);
-        hdp2 = new HdpExecutionStore(factsRegistry, aggregatorsFactory, programHash);
 
         // Step 0. Create mock SHARP facts aggregator mmr id 2
         aggregatorsFactory.createAggregator(2, sharpFactsAggregator);
@@ -452,5 +448,50 @@ contract HdpExecutionStoreTest is Test {
         bytes32 gpsFactHash = keccak256(abi.encode(programHash, programOutputHash));
 
         return gpsFactHash;
+    }
+
+    function _getProgramHash() internal returns (bytes32) {
+        string[] memory inputs = new string[](5);
+        inputs[0] = "python3";
+        inputs[1] = "-m";
+        inputs[2] = "helpers.hash_program";
+        inputs[3] = "--program";
+        inputs[4] = "./helpers/hdp.json";
+        bytes memory abiEncoded = vm.ffi(inputs);
+        bytes32 programHash = abi.decode(abiEncoded, (bytes32));
+        return programHash;
+    }
+
+    function _fetchCairoInput()
+        internal
+        returns (
+            uint256 usedMmrId,
+            uint256 usedMmrSize,
+            bytes32 usedMmrRoot,
+            bytes32 resultsMerkleRoot,
+            bytes32 tasksMerkleRoot,
+            bytes32[] memory resultsInclusionProofs,
+            bytes32[] memory tasksInclusionProofs,
+            bytes32[] memory resultsCommitments,
+            bytes32[] memory tasksCommitments
+        )
+    {
+        string[] memory inputs = new string[](2);
+        inputs[0] = "node";
+        inputs[1] = "./helpers/fetch_cairo_input.js";
+        bytes memory abiEncoded = vm.ffi(inputs);
+        (
+            usedMmrId,
+            usedMmrSize,
+            usedMmrRoot,
+            resultsMerkleRoot,
+            tasksMerkleRoot,
+            resultsInclusionProofs,
+            tasksInclusionProofs,
+            resultsCommitments,
+            tasksCommitments
+        ) = abi.decode(
+            abiEncoded, (uint256, uint256, bytes32, bytes32, bytes32, bytes32[], bytes32[], bytes32[], bytes32[])
+        );
     }
 }
