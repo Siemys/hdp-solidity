@@ -22,10 +22,7 @@ contract MockFactsRegistry is IFactsRegistry {
 contract MockAggregatorsFactory is IAggregatorsFactory {
     mapping(uint256 => ISharpFactsAggregator) public aggregatorsById;
 
-    function createAggregator(
-        uint256 id,
-        ISharpFactsAggregator aggregator
-    ) external {
+    function createAggregator(uint256 id, ISharpFactsAggregator aggregator) external {
         aggregatorsById[id] = aggregator;
     }
 }
@@ -40,13 +37,12 @@ contract MockSharpFactsAggregator is ISharpFactsAggregator {
     }
 
     function aggregatorState() external view returns (AggregatorState memory) {
-        return
-            AggregatorState({
-                poseidonMmrRoot: usedMmrRoot,
-                keccakMmrRoot: bytes32(0),
-                mmrSize: usedMmrSize,
-                continuableParentHash: bytes32(0)
-            });
+        return AggregatorState({
+            poseidonMmrRoot: usedMmrRoot,
+            keccakMmrRoot: bytes32(0),
+            mmrSize: usedMmrSize,
+            continuableParentHash: bytes32(0)
+        });
     }
 }
 
@@ -81,11 +77,7 @@ contract HdpExecutionStoreTest is Test {
 
         // Get program hash from compiled Cairo program
         programHash = _getProgramHash();
-        hdp = new HdpExecutionStore(
-            factsRegistry,
-            aggregatorsFactory,
-            programHash
-        );
+        hdp = new HdpExecutionStore(factsRegistry, aggregatorsFactory, programHash);
 
         // Parse from input file
         (
@@ -101,10 +93,7 @@ contract HdpExecutionStoreTest is Test {
         ) = _fetchCairoInput();
 
         // Mock SHARP facts aggregator
-        sharpFactsAggregator = new MockSharpFactsAggregator(
-            fetchedMmrRoot,
-            fetchedMmrSize
-        );
+        sharpFactsAggregator = new MockSharpFactsAggregator(fetchedMmrRoot, fetchedMmrSize);
 
         // Create mock SHARP facts aggregator
         aggregatorsFactory.createAggregator(fetchedMmrId, sharpFactsAggregator);
@@ -113,12 +102,10 @@ contract HdpExecutionStoreTest is Test {
     }
 
     function testHdpExecutionFlow() public {
-        (uint256 taskRootLow, uint256 taskRootHigh) = Uint256Splitter.split128(
-            uint256(bytes32(fetchedTasksMerkleRoot))
-        );
+        (uint256 taskRootLow, uint256 taskRootHigh) = Uint256Splitter.split128(uint256(bytes32(fetchedTasksMerkleRoot)));
 
-        (uint256 resultRootLow, uint256 resultRootHigh) = Uint256Splitter
-            .split128(uint256(bytes32(fetchedResultsMerkleRoot)));
+        (uint256 resultRootLow, uint256 resultRootHigh) =
+            Uint256Splitter.split128(uint256(bytes32(fetchedResultsMerkleRoot)));
 
         // Cache MMR root
         hdp.cacheMmrRoot(fetchedMmrId);
@@ -148,18 +135,11 @@ contract HdpExecutionStoreTest is Test {
         );
 
         // Check if the task state is FINALIZED
-        HdpExecutionStore.TaskStatus taskStatusAfter = hdp.getTaskStatus(
-            fetchedTasksCommitments[0]
-        );
-        assertEq(
-            uint256(taskStatusAfter),
-            uint256(HdpExecutionStore.TaskStatus.FINALIZED)
-        );
+        HdpExecutionStore.TaskStatus taskStatusAfter = hdp.getTaskStatus(fetchedTasksCommitments[0]);
+        assertEq(uint256(taskStatusAfter), uint256(HdpExecutionStore.TaskStatus.FINALIZED));
 
         // Check if the task result is stored
-        bytes32 taskResult = hdp.getFinalizedTaskResult(
-            fetchedTasksCommitments[0]
-        );
+        bytes32 taskResult = hdp.getFinalizedTaskResult(fetchedTasksCommitments[0]);
         assertEq(taskResult, fetchedResults[0]);
     }
 
@@ -214,18 +194,7 @@ contract HdpExecutionStoreTest is Test {
             tasksCommitments,
             taskResults
         ) = abi.decode(
-            abiEncoded,
-            (
-                uint256,
-                uint256,
-                bytes32,
-                bytes32,
-                bytes32,
-                bytes32[][],
-                bytes32[][],
-                bytes32[],
-                bytes32[]
-            )
+            abiEncoded, (uint256, uint256, bytes32, bytes32, bytes32, bytes32[][], bytes32[][], bytes32[], bytes32[])
         );
     }
 }
