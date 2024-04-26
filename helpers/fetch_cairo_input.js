@@ -1,4 +1,4 @@
-const { AbiCoder,zeroPadValue, getBytes, isBytesLike } = require("ethers");
+const { AbiCoder } = require("ethers");
 const { StandardMerkleTree } = require("@openzeppelin/merkle-tree") ;
 const cached = require("./target/cached_output.json");
 
@@ -14,7 +14,6 @@ function padToBytes32(hexStr) {
 
 async function main() {
     const encoder =  new AbiCoder();
- 
     usedMmrId =cached["mmr"]["id"];
     usedMmrSize = cached["mmr"]["size"];
     usedMmrRoot = padToBytes32(cached["mmr"]["root"]);
@@ -29,8 +28,6 @@ async function main() {
     });
     const tasksMerkleTree = StandardMerkleTree.of([tasksCommitments], ["bytes32"], { sortLeaves: false });
     const resultsMerkleTree = StandardMerkleTree.of([results], ["bytes32"], { sortLeaves: false });
-
-    //TODO: Handle the inclusion proofs for the index > 0
     tasksInclusionProofs = tasksCommitments.map(commit => tasksMerkleTree.getProof(tasksCommitments.indexOf(commit)));
     resultsInclusionProofs = results.map(commit => resultsMerkleTree.getProof(results.indexOf(commit)));
 
@@ -39,14 +36,15 @@ async function main() {
         [   usedMmrId,
             usedMmrSize,
             usedMmrRoot,
-            resultsMerkleRoot,
             tasksMerkleRoot,
-            resultsInclusionProofs,
+            resultsMerkleRoot,
             tasksInclusionProofs,
+            resultsInclusionProofs,
+            tasksCommitments,
             results,
-            tasksCommitments
         ]
       );
       console.log(abiEncodedResult);
 }
+
 main();

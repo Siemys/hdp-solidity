@@ -50,7 +50,10 @@ contract HdpExecutionStore is AccessControl {
     event MmrRootCached(uint256 mmrId, uint256 mmrSize, bytes32 mmrRoot);
 
     /// @notice emitted when a new task is scheduled
-    event TaskWithBlockSampledDatalakeScheduled(BlockSampledDatalake datalake, ComputationalTask task);
+    event TaskWithBlockSampledDatalakeScheduled(
+        BlockSampledDatalake datalake,
+        ComputationalTask task
+    );
 
     /// @notice constant representing role of operator
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
@@ -70,7 +73,11 @@ contract HdpExecutionStore is AccessControl {
     /// @notice mapping of mmr id => mmr size => mmr root
     mapping(uint256 => mapping(uint256 => bytes32)) public cachedMMRsRoots;
 
-    constructor(IFactsRegistry factsRegistry, IAggregatorsFactory aggregatorsFactory, bytes32 programHash) {
+    constructor(
+        IFactsRegistry factsRegistry,
+        IAggregatorsFactory aggregatorsFactory,
+        bytes32 programHash
+    ) {
         SHARP_FACTS_REGISTRY = factsRegistry;
         AGGREGATORS_FACTORY = aggregatorsFactory;
         PROGRAM_HASH = programHash;
@@ -88,11 +95,19 @@ contract HdpExecutionStore is AccessControl {
     /// @notice Caches the MMR root for a given MMR id
     /// @notice Get MMR size and root from the aggregator and cache it
     function cacheMmrRoot(uint256 mmrId) public {
-        ISharpFactsAggregator aggregator = AGGREGATORS_FACTORY.aggregatorsById(mmrId);
-        ISharpFactsAggregator.AggregatorState memory aggregatorState = aggregator.aggregatorState();
-        cachedMMRsRoots[mmrId][aggregatorState.mmrSize] = aggregatorState.poseidonMmrRoot;
+        ISharpFactsAggregator aggregator = AGGREGATORS_FACTORY.aggregatorsById(
+            mmrId
+        );
+        ISharpFactsAggregator.AggregatorState
+            memory aggregatorState = aggregator.aggregatorState();
+        cachedMMRsRoots[mmrId][aggregatorState.mmrSize] = aggregatorState
+            .poseidonMmrRoot;
 
-        emit MmrRootCached(mmrId, aggregatorState.mmrSize, aggregatorState.poseidonMmrRoot);
+        emit MmrRootCached(
+            mmrId,
+            aggregatorState.mmrSize,
+            aggregatorState.poseidonMmrRoot
+        );
     }
 
     /// @notice Requests the execution of a task with a block sampled datalake
@@ -111,34 +126,40 @@ contract HdpExecutionStore is AccessControl {
         }
 
         // Store the task result
-        cachedTasksResult[taskCommitment] = TaskResult({status: TaskStatus.SCHEDULED, result: ""});
+        cachedTasksResult[taskCommitment] = TaskResult({
+            status: TaskStatus.SCHEDULED,
+            result: ""
+        });
 
-        emit TaskWithBlockSampledDatalakeScheduled(blockSampledDatalake, computationalTask);
+        emit TaskWithBlockSampledDatalakeScheduled(
+            blockSampledDatalake,
+            computationalTask
+        );
     }
 
     /// @notice Authenticates the execution of a task is finalized
     ///     by verifying the FactRegistry and Merkle proofs
     /// @param usedMmrId The id of the MMR used to compute task
     /// @param usedMmrSize The size of the MMR used to compute task
-    /// @param batchResultsMerkleRootLow The low 128 bits of the results Merkle root
-    /// @param batchResultsMerkleRootHigh The high 128 bits of the results Merkle root
-    /// @param batchTasksMerkleRootLow The low 128 bits of the tasks Merkle root
-    /// @param batchTasksMerkleRootHigh The high 128 bits of the tasks Merkle root
-    /// @param batchInclusionProofsOfTasks The Merkle proof of the tasks
-    /// @param batchInclusionProofsOfResults The Merkle proof of the results
-    /// @param computationalTasksResult The result of the computational tasks
+    /// @param taskMerkleRootLow The low 128 bits of the tasks Merkle root
+    /// @param taskMerkleRootHigh The high 128 bits of the tasks Merkle root
+    /// @param resultMerkleRootLow The low 128 bits of the results Merkle root
+    /// @param resultMerkleRootHigh The high 128 bits of the results Merkle root
+    /// @param tasksInclusionProofs The Merkle proof of the tasks
+    /// @param resultsInclusionProofs The Merkle proof of the results
     /// @param taskCommitments The commitment of the tasks
+    /// @param taskResults The result of the computational tasks
     function authenticateTaskExecution(
         uint256 usedMmrId,
         uint256 usedMmrSize,
-        uint128 batchResultsMerkleRootLow,
-        uint128 batchResultsMerkleRootHigh,
-        uint128 batchTasksMerkleRootLow,
-        uint128 batchTasksMerkleRootHigh,
-        bytes32[][] memory batchInclusionProofsOfTasks,
-        bytes32[][] memory batchInclusionProofsOfResults,
-        bytes32[] calldata computationalTasksResult,
-        bytes32[] calldata taskCommitments
+        uint256 taskMerkleRootLow,
+        uint256 taskMerkleRootHigh,
+        uint256 resultMerkleRootLow,
+        uint256 resultMerkleRootHigh,
+        bytes32[][] memory tasksInclusionProofs,
+        bytes32[][] memory resultsInclusionProofs,
+        bytes32[] calldata taskCommitments,
+        bytes32[] calldata taskResults
     ) external onlyOperator {
         // Load MMRs root
         bytes32 usedMmrRoot = loadMmrRoot(usedMmrId, usedMmrSize);
@@ -148,17 +169,19 @@ contract HdpExecutionStore is AccessControl {
 
         // Assign values to the program output array
         programOutput[0] = uint256(usedMmrRoot);
-        programOutput[1] = uint256(usedMmrSize);
-        programOutput[2] = uint256(batchResultsMerkleRootLow);
-        programOutput[3] = uint256(batchResultsMerkleRootHigh);
-        programOutput[4] = uint256(batchTasksMerkleRootLow);
-        programOutput[5] = uint256(batchTasksMerkleRootHigh);
+        programOutput[1] = usedMmrSize;
+        programOutput[2] = resultMerkleRootLow;
+        programOutput[3] = resultMerkleRootHigh;
+        programOutput[4] = taskMerkleRootLow;
+        programOutput[5] = taskMerkleRootHigh;
 
         // Compute program output hash
         bytes32 programOutputHash = keccak256(abi.encodePacked(programOutput));
 
         // Compute GPS fact hash
-        bytes32 gpsFactHash = keccak256(abi.encode(PROGRAM_HASH, programOutputHash));
+        bytes32 gpsFactHash = keccak256(
+            abi.encode(PROGRAM_HASH, programOutputHash)
+        );
 
         // Ensure GPS fact is registered
         if (!SHARP_FACTS_REGISTRY.isValid(gpsFactHash)) {
@@ -166,50 +189,69 @@ contract HdpExecutionStore is AccessControl {
         }
 
         // Loop through all the tasks in the batch
-        for (uint256 i = 0; i < computationalTasksResult.length; i++) {
-            bytes32 computationalTaskResult = computationalTasksResult[i];
-            bytes32[] memory batchInclusionProofsOfTask = batchInclusionProofsOfTasks[i];
-            bytes32[] memory batchInclusionProofsOfResult = batchInclusionProofsOfResults[i];
+        for (uint256 i = 0; i < taskResults.length; i++) {
+            bytes32 computationalTaskResult = taskResults[i];
+            bytes32[] memory taskInclusionProof = tasksInclusionProofs[i];
+            bytes32[] memory resultInclusionProof = resultsInclusionProofs[i];
 
             // Convert the low and high 128 bits to a single 256 bit value
-            bytes32 batchResultsMerkleRoot =
-                bytes32((uint256(batchResultsMerkleRootHigh) << 128) | uint256(batchResultsMerkleRootLow));
-            bytes32 batchTasksMerkleRoot =
-                bytes32((uint256(batchTasksMerkleRootHigh) << 128) | uint256(batchTasksMerkleRootLow));
+            bytes32 resultMerkleRoot = bytes32(
+                (resultMerkleRootHigh << 128) | resultMerkleRootLow
+            );
+            bytes32 taskMerkleRoot = bytes32(
+                (taskMerkleRootHigh << 128) | taskMerkleRootLow
+            );
 
             // Compute the Merkle leaf of the task
             bytes32 taskCommitment = taskCommitments[i];
             bytes32 taskMerkleLeaf = standardLeafHash(taskCommitment);
             // Ensure that the task is included in the batch, by verifying the Merkle proof
-            bool isVerifiedTask = batchInclusionProofsOfTask.verify(batchTasksMerkleRoot, taskMerkleLeaf);
+            bool isVerifiedTask = taskInclusionProof.verify(
+                taskMerkleRoot,
+                taskMerkleLeaf
+            );
 
             if (!isVerifiedTask) {
                 revert NotInBatch();
             }
 
             // Compute the Merkle leaf of the task result
-            bytes32 taskResultCommitment = keccak256(abi.encode(taskCommitment, computationalTaskResult));
-            bytes32 taskResultMerkleLeaf = standardLeafHash(taskResultCommitment);
+            bytes32 taskResultCommitment = keccak256(
+                abi.encode(taskCommitment, computationalTaskResult)
+            );
+            bytes32 taskResultMerkleLeaf = standardLeafHash(
+                taskResultCommitment
+            );
             // Ensure that the task result is included in the batch, by verifying the Merkle proof
-            bool isVerifiedResult = batchInclusionProofsOfResult.verify(batchResultsMerkleRoot, taskResultMerkleLeaf);
+            bool isVerifiedResult = resultInclusionProof.verify(
+                resultMerkleRoot,
+                taskResultMerkleLeaf
+            );
 
             if (!isVerifiedResult) {
                 revert NotInBatch();
             }
 
             // Store the task result
-            cachedTasksResult[taskCommitment] =
-                TaskResult({status: TaskStatus.FINALIZED, result: computationalTaskResult});
+            cachedTasksResult[taskCommitment] = TaskResult({
+                status: TaskStatus.FINALIZED,
+                result: computationalTaskResult
+            });
         }
     }
 
     /// @notice Load MMR root from cache with given mmrId and mmrSize
-    function loadMmrRoot(uint256 mmrId, uint256 mmrSize) public view returns (bytes32) {
+    function loadMmrRoot(
+        uint256 mmrId,
+        uint256 mmrSize
+    ) public view returns (bytes32) {
         return cachedMMRsRoots[mmrId][mmrSize];
     }
 
     /// @notice Returns the result of a finalized task
-    function getFinalizedTaskResult(bytes32 taskCommitment) external view returns (bytes32) {
+    function getFinalizedTaskResult(
+        bytes32 taskCommitment
+    ) external view returns (bytes32) {
         // Ensure task is finalized
         if (cachedTasksResult[taskCommitment].status != TaskStatus.FINALIZED) {
             revert NotFinalized();
@@ -218,7 +260,9 @@ contract HdpExecutionStore is AccessControl {
     }
 
     /// @notice Returns the status of a task
-    function getTaskStatus(bytes32 taskCommitment) external view returns (TaskStatus) {
+    function getTaskStatus(
+        bytes32 taskCommitment
+    ) external view returns (TaskStatus) {
         return cachedTasksResult[taskCommitment].status;
     }
 

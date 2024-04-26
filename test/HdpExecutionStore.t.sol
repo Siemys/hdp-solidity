@@ -61,7 +61,7 @@ contract HdpExecutionStoreTest is Test {
     IAggregatorsFactory private aggregatorsFactory;
     ISharpFactsAggregator private sharpFactsAggregator;
 
-    // Cached fetched data
+    // Cached fetched data from input
     bytes32 programHash;
     uint256 fetchedMmrId;
     uint256 fetchedMmrSize;
@@ -79,7 +79,7 @@ contract HdpExecutionStoreTest is Test {
         // Factory for creating SHARP facts aggregators
         aggregatorsFactory = new MockAggregatorsFactory();
 
-        // Get program hash
+        // Get program hash from compiled Cairo program
         programHash = _getProgramHash();
         hdp = new HdpExecutionStore(
             factsRegistry,
@@ -92,12 +92,12 @@ contract HdpExecutionStoreTest is Test {
             fetchedMmrId,
             fetchedMmrSize,
             fetchedMmrRoot,
-            fetchedResultsMerkleRoot,
             fetchedTasksMerkleRoot,
-            fetchedResultsInclusionProofs,
+            fetchedResultsMerkleRoot,
             fetchedTasksInclusionProofs,
-            fetchedResults,
-            fetchedTasksCommitments
+            fetchedResultsInclusionProofs,
+            fetchedTasksCommitments,
+            fetchedResults
         ) = _fetchCairoInput();
 
         // Mock SHARP facts aggregator
@@ -106,13 +106,13 @@ contract HdpExecutionStoreTest is Test {
             fetchedMmrSize
         );
 
-        // Step 0. Create mock SHARP facts aggregator
+        // Create mock SHARP facts aggregator
         aggregatorsFactory.createAggregator(fetchedMmrId, sharpFactsAggregator);
         assertTrue(hdp.hasRole(keccak256("OPERATOR_ROLE"), address(this)));
         hdp.grantRole(keccak256("OPERATOR_ROLE"), proverAddress);
     }
 
-    function testSingleBlockSingleBlockSampledDatalake() public {
+    function testHdpExecutionFlow() public {
         (uint256 taskRootLow, uint256 taskRootHigh) = Uint256Splitter.split128(
             uint256(bytes32(fetchedTasksMerkleRoot))
         );
@@ -123,7 +123,7 @@ contract HdpExecutionStoreTest is Test {
         // Cache MMR root
         hdp.cacheMmrRoot(fetchedMmrId);
 
-        // Compute fact hash from PIE
+        // Compute fact hash from PIE file
         bytes32 factHash = _computeFactHash();
 
         // Mark the fact as valid (Mocking SHARP behavior)
@@ -137,14 +137,14 @@ contract HdpExecutionStoreTest is Test {
         hdp.authenticateTaskExecution(
             fetchedMmrId,
             fetchedMmrSize,
-            uint128(resultRootLow),
-            uint128(resultRootHigh),
-            uint128(taskRootLow),
-            uint128(taskRootHigh),
+            taskRootLow,
+            taskRootHigh,
+            resultRootLow,
+            resultRootHigh,
             fetchedTasksInclusionProofs,
             fetchedResultsInclusionProofs,
-            fetchedResults,
-            fetchedTasksCommitments
+            fetchedTasksCommitments,
+            fetchedResults
         );
 
         // Check if the task state is FINALIZED
@@ -191,12 +191,12 @@ contract HdpExecutionStoreTest is Test {
             uint256 usedMmrId,
             uint256 usedMmrSize,
             bytes32 usedMmrRoot,
-            bytes32 resultsMerkleRoot,
             bytes32 tasksMerkleRoot,
-            bytes32[][] memory resultsInclusionProofs,
+            bytes32 resultsMerkleRoot,
             bytes32[][] memory tasksInclusionProofs,
-            bytes32[] memory resultsCommitments,
-            bytes32[] memory tasksCommitments
+            bytes32[][] memory resultsInclusionProofs,
+            bytes32[] memory tasksCommitments,
+            bytes32[] memory taskResults
         )
     {
         string[] memory inputs = new string[](2);
@@ -207,12 +207,12 @@ contract HdpExecutionStoreTest is Test {
             usedMmrId,
             usedMmrSize,
             usedMmrRoot,
-            resultsMerkleRoot,
             tasksMerkleRoot,
-            resultsInclusionProofs,
+            resultsMerkleRoot,
             tasksInclusionProofs,
-            resultsCommitments,
-            tasksCommitments
+            resultsInclusionProofs,
+            tasksCommitments,
+            taskResults
         ) = abi.decode(
             abiEncoded,
             (
