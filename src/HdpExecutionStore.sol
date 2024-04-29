@@ -56,7 +56,8 @@ contract HdpExecutionStore is AccessControl {
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
 
     /// @notice constant representing the pedersen hash of the Cairo HDP program
-    bytes32 public constant PROGRAM_HASH = 0x05b1dad6ba5140fedd92861b0b8e0cbcd64eefb2fd59dcd60aa60cc1ba7c0eab;
+    bytes32 public immutable PROGRAM_HASH;
+
     /// @notice interface to the facts registry of SHARP
     IFactsRegistry public immutable SHARP_FACTS_REGISTRY;
 
@@ -69,9 +70,10 @@ contract HdpExecutionStore is AccessControl {
     /// @notice mapping of mmr id => mmr size => mmr root
     mapping(uint256 => mapping(uint256 => bytes32)) public cachedMMRsRoots;
 
-    constructor(IFactsRegistry factsRegistry, IAggregatorsFactory aggregatorsFactory) {
+    constructor(IFactsRegistry factsRegistry, IAggregatorsFactory aggregatorsFactory, bytes32 programHash) {
         SHARP_FACTS_REGISTRY = factsRegistry;
         AGGREGATORS_FACTORY = aggregatorsFactory;
+        PROGRAM_HASH = programHash;
 
         _setRoleAdmin(OPERATOR_ROLE, OPERATOR_ROLE);
         _grantRole(OPERATOR_ROLE, _msgSender());
@@ -118,25 +120,25 @@ contract HdpExecutionStore is AccessControl {
     ///     by verifying the FactRegistry and Merkle proofs
     /// @param usedMmrId The id of the MMR used to compute task
     /// @param usedMmrSize The size of the MMR used to compute task
-    /// @param batchResultsMerkleRootLow The low 128 bits of the results Merkle root
-    /// @param batchResultsMerkleRootHigh The high 128 bits of the results Merkle root
-    /// @param batchTasksMerkleRootLow The low 128 bits of the tasks Merkle root
-    /// @param batchTasksMerkleRootHigh The high 128 bits of the tasks Merkle root
-    /// @param batchInclusionProofsOfTasks The Merkle proof of the tasks
-    /// @param batchInclusionProofsOfResults The Merkle proof of the results
-    /// @param computationalTasksResult The result of the computational tasks
+    /// @param taskMerkleRootLow The low 128 bits of the tasks Merkle root
+    /// @param taskMerkleRootHigh The high 128 bits of the tasks Merkle root
+    /// @param resultMerkleRootLow The low 128 bits of the results Merkle root
+    /// @param resultMerkleRootHigh The high 128 bits of the results Merkle root
+    /// @param tasksInclusionProofs The Merkle proof of the tasks
+    /// @param resultsInclusionProofs The Merkle proof of the results
     /// @param taskCommitments The commitment of the tasks
+    /// @param taskResults The result of the computational tasks
     function authenticateTaskExecution(
         uint256 usedMmrId,
         uint256 usedMmrSize,
-        uint128 batchResultsMerkleRootLow,
-        uint128 batchResultsMerkleRootHigh,
-        uint128 batchTasksMerkleRootLow,
-        uint128 batchTasksMerkleRootHigh,
-        bytes32[][] memory batchInclusionProofsOfTasks,
-        bytes32[][] memory batchInclusionProofsOfResults,
-        bytes32[] calldata computationalTasksResult,
-        bytes32[] calldata taskCommitments
+        uint256 taskMerkleRootLow,
+        uint256 taskMerkleRootHigh,
+        uint256 resultMerkleRootLow,
+        uint256 resultMerkleRootHigh,
+        bytes32[][] memory tasksInclusionProofs,
+        bytes32[][] memory resultsInclusionProofs,
+        bytes32[] calldata taskCommitments,
+        bytes32[] calldata taskResults
     ) external onlyOperator {
         // Load MMRs root
         bytes32 usedMmrRoot = loadMmrRoot(usedMmrId, usedMmrSize);
@@ -146,11 +148,11 @@ contract HdpExecutionStore is AccessControl {
 
         // Assign values to the program output array
         programOutput[0] = uint256(usedMmrRoot);
-        programOutput[1] = uint256(usedMmrSize);
-        programOutput[2] = uint256(batchResultsMerkleRootLow);
-        programOutput[3] = uint256(batchResultsMerkleRootHigh);
-        programOutput[4] = uint256(batchTasksMerkleRootLow);
-        programOutput[5] = uint256(batchTasksMerkleRootHigh);
+        programOutput[1] = usedMmrSize;
+        programOutput[2] = resultMerkleRootLow;
+        programOutput[3] = resultMerkleRootHigh;
+        programOutput[4] = taskMerkleRootLow;
+        programOutput[5] = taskMerkleRootHigh;
 
         // Compute program output hash
         bytes32 programOutputHash = keccak256(abi.encodePacked(programOutput));
@@ -164,22 +166,20 @@ contract HdpExecutionStore is AccessControl {
         }
 
         // Loop through all the tasks in the batch
-        for (uint256 i = 0; i < computationalTasksResult.length; i++) {
-            bytes32 computationalTaskResult = computationalTasksResult[i];
-            bytes32[] memory batchInclusionProofsOfTask = batchInclusionProofsOfTasks[i];
-            bytes32[] memory batchInclusionProofsOfResult = batchInclusionProofsOfResults[i];
+        for (uint256 i = 0; i < taskResults.length; i++) {
+            bytes32 computationalTaskResult = taskResults[i];
+            bytes32[] memory taskInclusionProof = tasksInclusionProofs[i];
+            bytes32[] memory resultInclusionProof = resultsInclusionProofs[i];
 
             // Convert the low and high 128 bits to a single 256 bit value
-            bytes32 batchResultsMerkleRoot =
-                bytes32((uint256(batchResultsMerkleRootHigh) << 128) | uint256(batchResultsMerkleRootLow));
-            bytes32 batchTasksMerkleRoot =
-                bytes32((uint256(batchTasksMerkleRootHigh) << 128) | uint256(batchTasksMerkleRootLow));
+            bytes32 resultMerkleRoot = bytes32((resultMerkleRootHigh << 128) | resultMerkleRootLow);
+            bytes32 taskMerkleRoot = bytes32((taskMerkleRootHigh << 128) | taskMerkleRootLow);
 
             // Compute the Merkle leaf of the task
             bytes32 taskCommitment = taskCommitments[i];
             bytes32 taskMerkleLeaf = standardLeafHash(taskCommitment);
             // Ensure that the task is included in the batch, by verifying the Merkle proof
-            bool isVerifiedTask = batchInclusionProofsOfTask.verify(batchTasksMerkleRoot, taskMerkleLeaf);
+            bool isVerifiedTask = taskInclusionProof.verify(taskMerkleRoot, taskMerkleLeaf);
 
             if (!isVerifiedTask) {
                 revert NotInBatch();
@@ -189,7 +189,7 @@ contract HdpExecutionStore is AccessControl {
             bytes32 taskResultCommitment = keccak256(abi.encode(taskCommitment, computationalTaskResult));
             bytes32 taskResultMerkleLeaf = standardLeafHash(taskResultCommitment);
             // Ensure that the task result is included in the batch, by verifying the Merkle proof
-            bool isVerifiedResult = batchInclusionProofsOfResult.verify(batchResultsMerkleRoot, taskResultMerkleLeaf);
+            bool isVerifiedResult = resultInclusionProof.verify(resultMerkleRoot, taskResultMerkleLeaf);
 
             if (!isVerifiedResult) {
                 revert NotInBatch();

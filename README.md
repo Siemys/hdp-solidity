@@ -71,6 +71,33 @@ source .env; forge script script/HdpExecutionStore.s.sol:HdpExecutionStoreDeploy
 
 ## Quick Start
 
+For one time local Cairo environment:
+
+```sh
+make cairo-install
+
+```
+
+For one time local `hdp` cli executable:
+
+```sh
+cargo install --git https://github.com/HerodotusDev/hdp --locked --force
+```
+
+For the compile the latest cairo program corresponds to `hdp` binary require to run test:
+
+```sh
+make compile
+```
+
+And to return fetched data, run:
+
+```sh
+make fetch-input
+```
+
+Now can run test from the setup above:
+
 ```sh
 # Install submodules
 forge install
@@ -80,6 +107,16 @@ forge build
 
 # Test
 forge test
+```
+
+## Test with different input
+
+If want to fetch different input, modify `helpers/script/fetch-input.sh`. Also construct corresponding BlockSampledDatalake and ComputationalTask instance before initiate.
+
+And run fetch input for modified request:
+
+```sh
+make fetch-input
 ```
 
 ## License

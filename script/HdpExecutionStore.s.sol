@@ -15,9 +15,10 @@ contract HdpExecutionStoreDeployer is Script {
 
         IFactsRegistry factsRegistry = IFactsRegistry(vm.envAddress("FACTS_REGISTRY_ADDRESS"));
         IAggregatorsFactory aggregatorsFactory = IAggregatorsFactory(vm.envAddress("AGGREGATORS_FACTORY_ADDRESS"));
+        bytes32 programHash = vm.envBytes32("PROGRAM_HASH");
 
         // Deploy the HdpExecutionStore
-        HdpExecutionStore hdpExecutionStore = new HdpExecutionStore(factsRegistry, aggregatorsFactory);
+        HdpExecutionStore hdpExecutionStore = new HdpExecutionStore(factsRegistry, aggregatorsFactory, programHash);
 
         console2.log("HdpExecutionStore deployed at: ", address(hdpExecutionStore));
 
