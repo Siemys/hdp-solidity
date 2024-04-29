@@ -84,10 +84,16 @@ For one time local `hdp` cli executable:
 cargo install --git https://github.com/HerodotusDev/hdp --locked --force
 ```
 
-For the setup require to run test:
+For the compile the latest cairo program corresponds to `hdp` binary require to run test:
 
 ```sh
-make setup
+make compile
+```
+
+And to return fetched data, run:
+
+```sh
+make fetch-input
 ```
 
 Now can run test from the setup above:
@@ -101,6 +107,16 @@ forge build
 
 # Test
 forge test
+```
+
+## Test with different input
+
+If want to fetch different input, modify `helpers/script/fetch-input.sh`. Also construct corresponding BlockSampledDatalake and ComputationalTask instance before initiate.
+
+And run fetch input for modified request:
+
+```sh
+make fetch-input
 ```
 
 ## License

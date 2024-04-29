@@ -25,3 +25,4 @@ node_modules/
 cached_input.json
 cached_output.json
 hdp.json
+hdp-cairo

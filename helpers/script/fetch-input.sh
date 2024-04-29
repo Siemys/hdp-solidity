@@ -1,6 +1,5 @@
 source venv/bin/activate
-hdp compiled-cairo ./helpers/target/hdp.json
-hdp encode -a -c ./helpers/target/cached_input.json -o ./helpers/target/cached_output.json "max" -b 4952200 4952229 "account.0x7f2c6f930306d3aa736b3a6c6a98f512f74036d4.balance" 1
+hdp encode -a -c ./helpers/target/cached_input.json -o ./helpers/target/cached_output.json "max" -b 5515000 5515029 "header.blob_gas_used" 1
 cairo-run \
   --program=helpers/target/hdp.json \
   --layout=starknet_with_keccak \

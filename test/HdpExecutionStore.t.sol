@@ -69,11 +69,30 @@ contract HdpExecutionStoreTest is Test {
     bytes32[] fetchedResults;
     bytes32[] fetchedTasksCommitments;
 
+    // !! If want to fetch different input, modify helpers/script/fetch-input.sh
+    // !! And construct corresponding BlockSampledDatalake and ComputationalTask here
+    BlockSampledDatalake datalake = BlockSampledDatalake({
+        blockRangeStart: 5515000,
+        blockRangeEnd: 5515029,
+        increment: 1,
+        sampledProperty: BlockSampledDatalakeCodecs.encodeSampledPropertyForHeaderProp(uint8(17))
+    });
+
+    ComputationalTask computationalTask =
+        ComputationalTask({aggregateFnId: AggregateFn.MAX, operatorId: Operator.NONE, valueToCompare: uint256(0)});
+
     function setUp() public {
         // Registery for facts that has been processed through SHARP
         factsRegistry = new MockFactsRegistry();
         // Factory for creating SHARP facts aggregators
         aggregatorsFactory = new MockAggregatorsFactory();
+
+        bytes[] memory datalakeEncodedCompare = new bytes[](1);
+        datalakeEncodedCompare[0] = datalake.encode();
+        bytes[] memory taskEncodedCompare = new bytes[](1);
+        taskEncodedCompare[0] = computationalTask.encode();
+
+        _callPreprocessCli(abi.encode(taskEncodedCompare), abi.encode(datalakeEncodedCompare));
 
         // Get program hash from compiled Cairo program
         programHash = _getProgramHash();
@@ -91,6 +110,11 @@ contract HdpExecutionStoreTest is Test {
             fetchedTasksCommitments,
             fetchedResults
         ) = _fetchCairoInput();
+
+        bytes32 computedDatalakeCommitment = datalake.commit();
+        bytes32 computedTaskCommitment = computationalTask.commit(computedDatalakeCommitment);
+
+        assertEq(fetchedTasksCommitments[0], computedTaskCommitment);
 
         // Mock SHARP facts aggregator
         sharpFactsAggregator = new MockSharpFactsAggregator(fetchedMmrRoot, fetchedMmrSize);
@@ -152,6 +176,28 @@ contract HdpExecutionStoreTest is Test {
         inputs[4] = "./helpers/target/hdp.json";
         bytes memory abiEncoded = vm.ffi(inputs);
         return abi.decode(abiEncoded, (bytes32));
+    }
+
+    function _callPreprocessCli(bytes memory encodedTask, bytes memory encodedDatalake) internal {
+        string[] memory inputs = new string[](4);
+        inputs[0] = "node";
+        inputs[1] = "./helpers/fetch_cairo_input.js";
+        inputs[2] = bytesToString(encodedTask);
+        inputs[3] = bytesToString(encodedDatalake);
+        vm.ffi(inputs);
+    }
+
+    function bytesToString(bytes memory _data) public pure returns (string memory) {
+        bytes memory buffer = new bytes(_data.length);
+        for (uint256 i = 0; i < _data.length; i++) {
+            bytes1 b = _data[i];
+            if (b == 0x00) {
+                buffer[i] = "_";
+            } else {
+                buffer[i] = b;
+            }
+        }
+        return string(buffer);
     }
 
     function _computeFactHash() internal returns (bytes32) {

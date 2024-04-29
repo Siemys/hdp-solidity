@@ -1,7 +1,12 @@
-setup: 
+compile: 
 	@echo "Setting up..."
-	chmod +x ./helpers/script/setup.sh
-	./helpers/script/setup.sh
+	chmod +x ./helpers/script/compile-program.sh
+	./helpers/script/compile-program.sh
+
+fetch-input:
+	@echo "Fetching..."
+	chmod +x ./helpers/script/fetch-input.sh
+	./helpers/script/fetch-input.sh
 
 cairo-install:
 	@echo "Installing cairo..."
