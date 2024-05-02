@@ -46,7 +46,7 @@ contract MockSharpFactsAggregator is ISharpFactsAggregator {
     }
 }
 
-contract BlockSampledHdpExecutionStoreTest is Test {
+contract HdpExecutionStoreTest is Test {
     using BlockSampledDatalakeCodecs for BlockSampledDatalake;
     using ComputationalTaskCodecs for ComputationalTask;
 
