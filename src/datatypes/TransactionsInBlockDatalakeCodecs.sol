@@ -15,7 +15,7 @@ struct TransactionsInBlockDatalake {
     uint256 startIndex;
     uint256 endIndex;
     uint256 increment;
-    bytes4 includedTypes;
+    bytes32 includedTypes;
     bytes sampledProperty;
 }
 
@@ -63,9 +63,9 @@ library TransactionsInBlockDatalakeCodecs {
             uint256 startIndex,
             uint256 endIndex,
             uint256 increment,
-            bytes4 includedTypes,
+            bytes32 includedTypes,
             bytes memory sampledProperty
-        ) = abi.decode(data, (DatalakeCode, uint256, uint256, uint256, uint256, bytes4, bytes));
+        ) = abi.decode(data, (DatalakeCode, uint256, uint256, uint256, uint256, bytes32, bytes));
         return TransactionsInBlockDatalake({
             targetBlock: targetBlock,
             startIndex: startIndex,
