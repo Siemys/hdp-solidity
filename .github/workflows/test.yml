@@ -43,11 +43,9 @@ jobs:
         run: |
           make cairo-install
         id: setup
-      - name: Display cairo version
-        run: source venv/bin/activate && cairo-run --version
       - name: Run Script
         run: |
-          source venv/bin/activate && make fetch-input
+          make fetch-input
         id: script
       - name: Run Forge tests
         run: |
