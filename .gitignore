@@ -14,8 +14,6 @@ docs/
 .env
 
 venv
-tools
-tests
 
 */__pycache__/
 
