@@ -1,4 +1,3 @@
-source venv/bin/activate
 cairo-run \
   --program=helpers/target/hdp.json \
   --layout=starknet_with_keccak \

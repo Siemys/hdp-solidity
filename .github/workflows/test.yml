@@ -43,6 +43,10 @@ jobs:
         run: |
           make cairo-install
         id: setup
+      - name: Enter venv
+        run: source venv/bin/activate
+      - name: Display cairo version
+        run: cairo-run --version
       - name: Run Script
         run: |
           make fetch-input
