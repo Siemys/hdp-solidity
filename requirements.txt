@@ -7,5 +7,4 @@ pysha3
 web3
 trie
 black
-starkware
 eth_abi
