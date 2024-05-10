@@ -1,7 +1,6 @@
 compile: 
-	@echo "Setting up..."
-	chmod +x ./helpers/script/compile-program.sh
-	./helpers/script/compile-program.sh
+	@echo "Cairo Compile..."
+	cairo-hash-program --program helpers/target/hdp.json
 
 cairo-run:
 	@echo "Running..."
