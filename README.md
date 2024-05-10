@@ -12,7 +12,7 @@ The HDP Solidity contracts interface with the Herodotus Data Processor (HDP) to 
 
 ## Contract Overview
 
-`HdpExecutionStore` is the main contract in this project. It manages the execution and verification of computational tasks on various datalakes like block-sampled datalake. The contract integrates multiple functionalities:
+`HdpExecutionStore` is the main contract in this project. It manages the execution and verification of computational tasks on various datalakes like block-sampled, transactions in block datalake. The contract integrates multiple functionalities:
 
 - **Task Scheduling and Result Caching**: Allows scheduling of tasks and caching of intermediate and final results.
 - **Merkle Proof Verification**: Utilizes Merkle proofs to ensure the integrity of task results and batch inclusions.
@@ -20,7 +20,8 @@ The HDP Solidity contracts interface with the Herodotus Data Processor (HDP) to 
 
 ### Key Functions
 
-- `requestExecutionOfTaskWithBlockSampledDatalake()`: Schedules computational tasks using block-sampled data.
+- `requestExecutionOfTaskWithBlockSampledDatalake()`: Schedules computational tasks using block-sampled data lake.
+- `requestExecutionOfTaskWithTransactionsInBlockDatalake()`: Schedules computational tasks using transactions-in-block data lake.
 - `authenticateTaskExecution()`: Verifies and finalizes the execution of computational tasks by validating Merkle proofs and registered facts.
 - `getFinalizedTaskResult()`: Retrieves results of finalized tasks.
 
@@ -35,8 +36,14 @@ The HDP Solidity contracts interface with the Herodotus Data Processor (HDP) to 
 ### Data Lakes
 
 - **BlockSampledDatalake**:
+
   - Structure used for defining data samples over a range of blocks.
-  - Encoded through `BlockSampledDatalakeCodecs` which manages the serialization and commitment of these data structures.
+  - Encoded through `BlockSampledDatalakeCodecs` which manages the serialization and commitment of the data structures.
+  - `commit()` function creates a hash of the encoded datalake, used for verifying integrity and registering tasks.
+
+- **TransactionsInBlockDatalake**:
+  - Structure used for defining transactions included in the target block.
+  - Encoded through `TransactionsInBlockDatalakeCodecs` which manages the serialization and commitment of the data structures.
   - `commit()` function creates a hash of the encoded datalake, used for verifying integrity and registering tasks.
 
 ### Computational Tasks
@@ -60,6 +67,7 @@ Pre-requisites:
 
 - Solidity (with solc >= 0.8.4)
 - Foundry
+- pnpm
 
 ## Deployment
 
@@ -78,25 +86,13 @@ make cairo-install
 
 ```
 
-For one time local `hdp` cli executable:
+To get Cairo PIE that is used in testing, run:
 
 ```sh
-cargo install --git https://github.com/HerodotusDev/hdp --locked --force
+make cairo-run
 ```
 
-For the compile the latest cairo program corresponds to `hdp` binary require to run test:
-
-```sh
-make compile
-```
-
-And to return fetched data, run:
-
-```sh
-make fetch-input
-```
-
-Now can run test from the setup above:
+Now can run the test from the setup above:
 
 ```sh
 # Install submodules
@@ -109,14 +105,21 @@ forge build
 forge test
 ```
 
+## Test with different Cairo Program
+
+To test with different version of [cairo program](https://github.com/HerodotusDev/hdp-cairo), compile it and locate it in [./helpers/target](./helpers/target).
+
 ## Test with different input
 
-If want to fetch different input, modify `helpers/script/fetch-input.sh`. Also construct corresponding BlockSampledDatalake and ComputationalTask instance before initiate.
+If want to fetch different input, generate `input.json` and `output.json` using [hdp cli](https://github.com/HerodotusDev/hdp) or you can get them from [hdp-test fixtures](https://github.com/HerodotusDev/hdp-test/tree/main/fixtures).
 
-And run fetch input for modified request:
+Modify input and output files that are located in `helpers/target/`. Also, in the test file, construct thecorresponding datalake and task instance before initiating.
+
+And run the test for modified request:
 
 ```sh
-make fetch-input
+# Test
+forge test
 ```
 
 ## License

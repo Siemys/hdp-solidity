@@ -73,7 +73,7 @@ contract HdpExecutionStoreTest is Test {
     bytes32[] fetchedResults;
     bytes32[] fetchedTasksCommitments;
 
-    // !! If want to fetch different input, modify helpers/script/fetch-input.sh
+    // !! If want to fetch different input, modify helpers/target/bs_cached_input.json && helpers/target/bs_cached_output.json
     // !! And construct corresponding BlockSampledDatalake and ComputationalTask here
     BlockSampledDatalake datalake =
         BlockSampledDatalake({
