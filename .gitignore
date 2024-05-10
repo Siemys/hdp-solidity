@@ -14,7 +14,6 @@ docs/
 .env
 
 venv
-tools
 
 */__pycache__/
 
@@ -22,7 +21,4 @@ node_modules/
 
 # Compiled source
 *_pie.zip
-cached_input.json
-cached_output.json
-hdp.json
 hdp-cairo
