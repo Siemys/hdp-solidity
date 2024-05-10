@@ -28,6 +28,9 @@ jobs:
           python-version: "3.9"
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
@@ -49,5 +52,5 @@ jobs:
         id: script
       - name: Run Forge tests
         run: |
-          forge test -vvv
+          source venv/bin/activate && forge test -vvv
         id: test

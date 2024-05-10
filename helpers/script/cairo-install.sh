@@ -49,3 +49,4 @@ python3.9 -m venv "$VENV_PATH"
 echo 'export PYTHONPATH="$PWD:$PYTHONPATH"' >> "$VENV_PATH/bin/activate"
 source "$VENV_PATH/bin/activate"
 pip install -r ./requirements.txt
+pnpm install
