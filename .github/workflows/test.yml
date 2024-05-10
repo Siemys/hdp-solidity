@@ -46,9 +46,9 @@ jobs:
         run: |
           make cairo-install
         id: setup
-      - name: Run Script
+      - name: Cairo run
         run: |
-          make fetch-input
+          make cairo-run
         id: script
       - name: Run Forge tests
         run: |

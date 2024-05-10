@@ -3,10 +3,10 @@ compile:
 	chmod +x ./helpers/script/compile-program.sh
 	./helpers/script/compile-program.sh
 
-fetch-input:
-	@echo "Fetching..."
-	chmod +x ./helpers/script/fetch-input.sh
-	./helpers/script/fetch-input.sh
+cairo-run:
+	@echo "Running..."
+	chmod +x ./helpers/script/cairo-run.sh
+	./helpers/script/cairo-run.sh
 
 cairo-install:
 	@echo "Installing cairo..."
