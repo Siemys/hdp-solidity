@@ -10,6 +10,10 @@
 
 The HDP Solidity contracts interface with the Herodotus Data Processor (HDP) to authenticate and store processed results securely on-chain. These contracts facilitate complex data processing tasks and result in validation using cryptographic proofs. For more, visit our [documentation](https://docs.herodotus.dev/herodotus-docs/developers/herodotus-data-processor-hdp).
 
+## Deployed Contracts
+
+- [Deployed Contracts Addresses](https://docs.herodotus.dev/herodotus-docs/developers/herodotus-data-processor-hdp#contract-addresses)
+
 ## Contract Overview
 
 `HdpExecutionStore` is the main contract in this project. It manages the execution and verification of computational tasks on various datalakes like block-sampled, transactions in block datalake. The contract integrates multiple functionalities:
