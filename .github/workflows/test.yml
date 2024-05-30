@@ -44,11 +44,7 @@ jobs:
         id: build
       - name: Run Setup
         run: |
-          make cairo-install && make hdp-install
-        id: setup
-      - name: Cairo run
-        run: |
-          make cairo-run
+          make cairo-install
         id: script
       - name: Run Forge tests
         run: |
