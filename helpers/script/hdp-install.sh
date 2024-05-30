@@ -1,0 +1,1 @@
+cargo install --git https://github.com/HerodotusDev/hdp --locked --force
