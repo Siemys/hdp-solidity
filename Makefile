@@ -2,10 +2,10 @@ compile:
 	@echo "Cairo Compile..."
 	cairo-hash-program --program helpers/target/hdp.json
 
-hdp-install:
+hdp-run:
 	@echo "Installing hdp binary..."
-	chmod +x ./helpers/script/hdp-install.sh
-	./helpers/script/hdp-install.sh
+	chmod +x ./helpers/script/hdp-run.sh
+	./helpers/script/hdp-run.sh
 
 cairo-run:
 	@echo "Running..."

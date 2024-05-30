@@ -45,6 +45,10 @@ jobs:
       - name: Run Setup
         run: |
           make cairo-install
+        id: setup
+      - name: Cairo run
+        run: |
+          make cairo-run
         id: script
       - name: Run Forge tests
         run: |

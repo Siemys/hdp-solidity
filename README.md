@@ -121,6 +121,12 @@ To test with different version of [cairo program](https://github.com/HerodotusDe
 
 ## Test with different input
 
+Utilize command:
+
+```sh
+make hdp-run
+```
+
 If want to fetch different input, generate `input.json` and `output.json` using [hdp cli](https://github.com/HerodotusDev/hdp) or you can get them from [hdp-test fixtures](https://github.com/HerodotusDev/hdp-test/tree/main/fixtures).
 
 Modify input and output files that are located in `helpers/target/`. Also, in the test file, construct thecorresponding datalake and task instance before initiating.
