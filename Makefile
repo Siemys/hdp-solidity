@@ -16,3 +16,8 @@ cairo-install:
 	@echo "Installing cairo..."
 	chmod +x ./helpers/script/cairo-install.sh
 	./helpers/script/cairo-install.sh
+
+cairo1-install:
+	@echo "Installing cairo..."
+	chmod +x ./helpers/script/cairo1-install.sh
+	./helpers/script/cairo1-install.sh
