@@ -3,7 +3,10 @@ pragma solidity ^0.8.4;
 
 import {Test} from "forge-std/Test.sol";
 import {HdpExecutionStore} from "../src/HdpExecutionStore.sol";
-import {TransactionsInBlockDatalake, TransactionsInBlockDatalakeCodecs} from "../src/datatypes/TransactionsInBlockDatalakeCodecs.sol";
+import {
+    TransactionsInBlockDatalake,
+    TransactionsInBlockDatalakeCodecs
+} from "../src/datatypes/TransactionsInBlockDatalakeCodecs.sol";
 import {ComputationalTask, ComputationalTaskCodecs} from "../src/datatypes/ComputationalTaskCodecs.sol";
 import {AggregateFn, Operator} from "../src/datatypes/ComputationalTaskCodecs.sol";
 import {IFactsRegistry} from "../src/interfaces/IFactsRegistry.sol";
@@ -22,10 +25,7 @@ contract MockFactsRegistry is IFactsRegistry {
 contract MockAggregatorsFactory is IAggregatorsFactory {
     mapping(uint256 => ISharpFactsAggregator) public aggregatorsById;
 
-    function createAggregator(
-        uint256 id,
-        ISharpFactsAggregator aggregator
-    ) external {
+    function createAggregator(uint256 id, ISharpFactsAggregator aggregator) external {
         aggregatorsById[id] = aggregator;
     }
 }
@@ -40,13 +40,12 @@ contract MockSharpFactsAggregator is ISharpFactsAggregator {
     }
 
     function aggregatorState() external view returns (AggregatorState memory) {
-        return
-            AggregatorState({
-                poseidonMmrRoot: usedMmrRoot,
-                keccakMmrRoot: bytes32(0),
-                mmrSize: usedMmrSize,
-                continuableParentHash: bytes32(0)
-            });
+        return AggregatorState({
+            poseidonMmrRoot: usedMmrRoot,
+            keccakMmrRoot: bytes32(0),
+            mmrSize: usedMmrSize,
+            continuableParentHash: bytes32(0)
+        });
     }
 }
 
@@ -75,23 +74,17 @@ contract HdpExecutionStoreTest is Test {
 
     // !! If want to fetch different input, modify helpers/target/tx_cached_input.json && helpers/target/tx_cached_output.json
     // !! And construct corresponding TransactionsInBlockDatalake and ComputationalTask here
-    TransactionsInBlockDatalake datalake =
-        TransactionsInBlockDatalake({
-            targetBlock: uint256(5605816),
-            startIndex: uint256(12),
-            endIndex: uint256(53),
-            increment: uint256(1),
-            includedTypes: uint256(0x00000101),
-            sampledProperty: TransactionsInBlockDatalakeCodecs
-                .encodeSampledPropertyForTxProp(uint8(12))
-        });
+    TransactionsInBlockDatalake datalake = TransactionsInBlockDatalake({
+        targetBlock: uint256(5605816),
+        startIndex: uint256(12),
+        endIndex: uint256(53),
+        increment: uint256(1),
+        includedTypes: uint256(0x00000101),
+        sampledProperty: TransactionsInBlockDatalakeCodecs.encodeSampledPropertyForTxProp(uint8(12))
+    });
 
     ComputationalTask computationalTask =
-        ComputationalTask({
-            aggregateFnId: AggregateFn.SLR,
-            operatorId: Operator.NONE,
-            valueToCompare: uint256(50)
-        });
+        ComputationalTask({aggregateFnId: AggregateFn.SLR, operatorId: Operator.NONE, valueToCompare: uint256(50)});
 
     function setUp() public {
         // Registery for facts that has been processed through SHARP
@@ -104,18 +97,11 @@ contract HdpExecutionStoreTest is Test {
         bytes[] memory taskEncodedCompare = new bytes[](1);
         taskEncodedCompare[0] = computationalTask.encode();
 
-        _callPreprocessCli(
-            abi.encode(taskEncodedCompare),
-            abi.encode(datalakeEncodedCompare)
-        );
+        _callPreprocessCli(abi.encode(taskEncodedCompare), abi.encode(datalakeEncodedCompare));
 
         // Get program hash from compiled Cairo program
         programHash = _getProgramHash();
-        hdp = new HdpExecutionStore(
-            factsRegistry,
-            aggregatorsFactory,
-            programHash
-        );
+        hdp = new HdpExecutionStore(factsRegistry, aggregatorsFactory, programHash);
 
         // Parse from input file
         (
@@ -131,17 +117,12 @@ contract HdpExecutionStoreTest is Test {
         ) = _fetchCairoInput();
 
         bytes32 computedDatalakeCommitment = datalake.commit();
-        bytes32 computedTaskCommitment = computationalTask.commit(
-            computedDatalakeCommitment
-        );
+        bytes32 computedTaskCommitment = computationalTask.commit(computedDatalakeCommitment);
 
         assertEq(fetchedTasksCommitments[0], computedTaskCommitment);
 
         // Mock SHARP facts aggregator
-        sharpFactsAggregator = new MockSharpFactsAggregator(
-            fetchedMmrRoot,
-            fetchedMmrSize
-        );
+        sharpFactsAggregator = new MockSharpFactsAggregator(fetchedMmrRoot, fetchedMmrSize);
 
         // Create mock SHARP facts aggregator
         aggregatorsFactory.createAggregator(fetchedMmrId, sharpFactsAggregator);
@@ -150,12 +131,10 @@ contract HdpExecutionStoreTest is Test {
     }
 
     function testHdpExecutionFlow() public {
-        (uint256 taskRootLow, uint256 taskRootHigh) = Uint256Splitter.split128(
-            uint256(bytes32(fetchedTasksMerkleRoot))
-        );
+        (uint256 taskRootLow, uint256 taskRootHigh) = Uint256Splitter.split128(uint256(bytes32(fetchedTasksMerkleRoot)));
 
-        (uint256 resultRootLow, uint256 resultRootHigh) = Uint256Splitter
-            .split128(uint256(bytes32(fetchedResultsMerkleRoot)));
+        (uint256 resultRootLow, uint256 resultRootHigh) =
+            Uint256Splitter.split128(uint256(bytes32(fetchedResultsMerkleRoot)));
 
         // Cache MMR root
         hdp.cacheMmrRoot(fetchedMmrId);
@@ -185,18 +164,11 @@ contract HdpExecutionStoreTest is Test {
         );
 
         // Check if the task state is FINALIZED
-        HdpExecutionStore.TaskStatus taskStatusAfter = hdp.getTaskStatus(
-            fetchedTasksCommitments[0]
-        );
-        assertEq(
-            uint256(taskStatusAfter),
-            uint256(HdpExecutionStore.TaskStatus.FINALIZED)
-        );
+        HdpExecutionStore.TaskStatus taskStatusAfter = hdp.getTaskStatus(fetchedTasksCommitments[0]);
+        assertEq(uint256(taskStatusAfter), uint256(HdpExecutionStore.TaskStatus.FINALIZED));
 
         // Check if the task result is stored
-        bytes32 taskResult = hdp.getFinalizedTaskResult(
-            fetchedTasksCommitments[0]
-        );
+        bytes32 taskResult = hdp.getFinalizedTaskResult(fetchedTasksCommitments[0]);
         assertEq(taskResult, fetchedResults[0]);
     }
 
@@ -211,10 +183,7 @@ contract HdpExecutionStoreTest is Test {
         return abi.decode(abiEncoded, (bytes32));
     }
 
-    function _callPreprocessCli(
-        bytes memory encodedTask,
-        bytes memory encodedDatalake
-    ) internal {
+    function _callPreprocessCli(bytes memory encodedTask, bytes memory encodedDatalake) internal {
         string[] memory inputs = new string[](4);
         inputs[0] = "node";
         inputs[1] = "./helpers/fetch_cairo_input.js";
@@ -223,9 +192,7 @@ contract HdpExecutionStoreTest is Test {
         vm.ffi(inputs);
     }
 
-    function bytesToString(
-        bytes memory _data
-    ) public pure returns (string memory) {
+    function bytesToString(bytes memory _data) public pure returns (string memory) {
         bytes memory buffer = new bytes(_data.length);
         for (uint256 i = 0; i < _data.length; i++) {
             bytes1 b = _data[i];
@@ -279,18 +246,7 @@ contract HdpExecutionStoreTest is Test {
             tasksCommitments,
             taskResults
         ) = abi.decode(
-            abiEncoded,
-            (
-                uint256,
-                uint256,
-                bytes32,
-                bytes32,
-                bytes32,
-                bytes32[][],
-                bytes32[][],
-                bytes32[],
-                bytes32[]
-            )
+            abiEncoded, (uint256, uint256, bytes32, bytes32, bytes32, bytes32[][], bytes32[][], bytes32[], bytes32[])
         );
     }
 }
