@@ -77,21 +77,18 @@ contract HdpExecutionStoreTest is Test {
     // !! And construct corresponding BlockSampledDatalake and ComputationalTask here
     BlockSampledDatalake datalake =
         BlockSampledDatalake({
-            blockRangeStart: 5260543,
-            blockRangeEnd: 5260571,
-            increment: 3,
+            blockRangeStart: 5858987,
+            blockRangeEnd: 5858997,
+            increment: 2,
             sampledProperty: BlockSampledDatalakeCodecs
-                .encodeSampledPropertyForAccount(
-                    address(0x7f2C6f930306D3AA736B3A6C6A98f512F74036D4),
-                    uint8(1)
-                )
+                .encodeSampledPropertyForHeaderProp(uint8(18))
         });
 
     ComputationalTask computationalTask =
         ComputationalTask({
-            aggregateFnId: AggregateFn.SUM,
+            aggregateFnId: AggregateFn.SLR,
             operatorId: Operator.NONE,
-            valueToCompare: uint256(0)
+            valueToCompare: uint256(10000000)
         });
 
     function setUp() public {
@@ -207,7 +204,7 @@ contract HdpExecutionStoreTest is Test {
         inputs[1] = "-m";
         inputs[2] = "helpers.hash_program";
         inputs[3] = "--program";
-        inputs[4] = "./helpers/target/hdp.json";
+        inputs[4] = "build/compiled_cairo/hdp.json";
         bytes memory abiEncoded = vm.ffi(inputs);
         return abi.decode(abiEncoded, (bytes32));
     }
