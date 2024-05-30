@@ -83,6 +83,12 @@ source .env; forge script script/HdpExecutionStore.s.sol:HdpExecutionStoreDeploy
 
 ## Quick Start
 
+For one time `hdp` binary installation:
+
+```sh
+make hdp-install
+```
+
 For one time local Cairo environment:
 
 ```sh
