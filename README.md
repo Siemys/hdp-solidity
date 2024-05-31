@@ -92,7 +92,7 @@ make hdp-install
 For one time local Cairo environment:
 
 ```sh
-make cairo-install
+make cairo-install && make cairo1-install
 
 ```
 
