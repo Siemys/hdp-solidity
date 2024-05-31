@@ -31,7 +31,7 @@ contract HdpExecutionStoreDeployer is Script {
         inputs[1] = "-m";
         inputs[2] = "helpers.hash_program";
         inputs[3] = "--program";
-        inputs[4] = "./helpers/target/hdp.json";
+        inputs[4] = "build/compiled_cairo/hdp.json";
         bytes memory abiEncoded = vm.ffi(inputs);
         return abi.decode(abiEncoded, (bytes32));
     }

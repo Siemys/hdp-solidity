@@ -83,6 +83,12 @@ source .env; forge script script/HdpExecutionStore.s.sol:HdpExecutionStoreDeploy
 
 ## Quick Start
 
+For one time `hdp` binary installation:
+
+```sh
+make hdp-install
+```
+
 For one time local Cairo environment:
 
 ```sh
@@ -114,6 +120,12 @@ forge test
 To test with different version of [cairo program](https://github.com/HerodotusDev/hdp-cairo), compile it and locate it in [./helpers/target](./helpers/target).
 
 ## Test with different input
+
+Utilize command:
+
+```sh
+make hdp-run
+```
 
 If want to fetch different input, generate `input.json` and `output.json` using [hdp cli](https://github.com/HerodotusDev/hdp) or you can get them from [hdp-test fixtures](https://github.com/HerodotusDev/hdp-test/tree/main/fixtures).
 

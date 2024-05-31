@@ -4,7 +4,7 @@ pragma solidity ^0.8.4;
 /// @dev A ComputationalTask.
 /// @param AggregateFnId The aggregate function id.
 /// @param operator The operator to use (only COUNT).
-/// @param valueToCompare The value to compare (only COUNT).
+/// @param valueToCompare The value to compare (COUNT/SLR).
 /// The context is used to pass additional parameters to the aggregate function.
 struct ComputationalTask {
     AggregateFn aggregateFnId;
@@ -19,7 +19,8 @@ enum AggregateFn {
     MIN,
     MAX,
     COUNT,
-    MERKLE
+    MERKLE,
+    SLR
 }
 
 ///@notice Operators for COUNT.
