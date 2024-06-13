@@ -80,7 +80,7 @@ contract HdpExecutionStoreTest is Test {
         endIndex: uint256(53),
         increment: uint256(1),
         includedTypes: uint256(0x00000101),
-        sampledProperty: TransactionsInBlockDatalakeCodecs.encodeSampledPropertyForTxProp(uint8(12))
+        sampledProperty: TransactionsInBlockDatalakeCodecs.encodeSampledPropertyFortxReceipt(uint8(0))
     });
 
     ComputationalTask computationalTask =

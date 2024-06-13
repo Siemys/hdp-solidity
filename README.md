@@ -119,6 +119,19 @@ forge test
 
 To test with different version of [cairo program](https://github.com/HerodotusDev/hdp-cairo), compile it and locate it in [build/compiled_cairo/](build/compiled_cairo/).
 
+Make sure to do this to generate corresponding PIE from modified cairo program
+
+```sh
+make cairo-run
+```
+
+And run the test for modified program:
+
+```sh
+# Test
+forge test
+```
+
 ## Test with different input
 
 Utilize command:
