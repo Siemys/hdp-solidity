@@ -25,9 +25,9 @@ async function main() {
       process.exit(1);
     }
     const encoder =  new AbiCoder();
-    usedMmrId =cached["mmr"]["id"];
-    usedMmrSize = cached["mmr"]["size"];
-    usedMmrRoot = padToBytes32(cached["mmr"]["root"]);
+    usedMmrId = [cached["mmr"]["id"]];
+    usedMmrSize = [cached["mmr"]["size"]];
+    usedMmrRoot = [padToBytes32(cached["mmr"]["root"])];
     resultsMerkleRoot = cached["results_root"];
     tasksMerkleRoot = cached["tasks_root"];
     tasks_list = cached["tasks"]
@@ -43,7 +43,7 @@ async function main() {
     resultsInclusionProofs = results.map(commit => resultsMerkleTree.getProof(results.indexOf(commit)));
 
     const abiEncodedResult = encoder.encode(
-        ["uint256", "uint256", "bytes32", "bytes32", "bytes32", "bytes32[][]", "bytes32[][]", "bytes32[]", "bytes32[]"],
+        ["uint256[]", "uint256[]", "bytes32[]", "bytes32", "bytes32", "bytes32[][]", "bytes32[][]", "bytes32[]", "bytes32[]"],
         [   usedMmrId,
             usedMmrSize,
             usedMmrRoot,
