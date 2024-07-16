@@ -44,7 +44,7 @@ jobs:
         id: build
       - name: Run Setup
         run: |
-          make cairo-install
+          make cairo-install && pnpm install
         id: setup
       - name: Run Forge tests
         run: |
