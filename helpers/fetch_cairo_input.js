@@ -25,34 +25,32 @@ async function main() {
       process.exit(1);
     }
     const encoder =  new AbiCoder();
-    usedMmrId = [cached["mmr"]["id"]];
-    usedMmrSize = [cached["mmr"]["size"]];
-    usedMmrRoot = [padToBytes32(cached["mmr"]["root"])];
+    usedMMRs = cached["mmr_metas"];
+    mmrIds = usedMMRs.map((mmr) => mmr["id"]);
+    mmrSizes = usedMMRs.map((mmr) => mmr["size"]);
+    mmrRoots = usedMMRs.map((mmr) => padToBytes32(mmr["root"]));
     resultsMerkleRoot = cached["results_root"];
     tasksMerkleRoot = cached["tasks_root"];
-    tasks_list = cached["tasks"]
-    tasksCommitments = tasks_list.map((task) => task["task_commitment"]);
-    results = tasks_list.map((task) => {
-        const bigIntValue = BigInt(task["compiled_result"]);
-        const hexString = "0x" + bigIntValue.toString(16).padStart(64, "0");
-        return hexString;
-    });
+    tasksCommitments = cached["tasks_commitments"];
+    resultsCommitments = cached["results_commitments"];
+    rawResults = cached["raw_results"];
     const tasksMerkleTree = StandardMerkleTree.of([tasksCommitments], ["bytes32"], { sortLeaves: false });
-    const resultsMerkleTree = StandardMerkleTree.of([results], ["bytes32"], { sortLeaves: false });
+    const resultsMerkleTree = StandardMerkleTree.of([resultsCommitments], ["bytes32"], { sortLeaves: false });
     tasksInclusionProofs = tasksCommitments.map(commit => tasksMerkleTree.getProof(tasksCommitments.indexOf(commit)));
-    resultsInclusionProofs = results.map(commit => resultsMerkleTree.getProof(results.indexOf(commit)));
+    resultsInclusionProofs = resultsCommitments.map(commit => resultsMerkleTree.getProof(resultsCommitments.indexOf(commit)));
+
 
     const abiEncodedResult = encoder.encode(
         ["uint256[]", "uint256[]", "bytes32[]", "bytes32", "bytes32", "bytes32[][]", "bytes32[][]", "bytes32[]", "bytes32[]"],
-        [   usedMmrId,
-            usedMmrSize,
-            usedMmrRoot,
+        [   mmrIds,
+            mmrSizes,
+            mmrRoots,
             tasksMerkleRoot,
             resultsMerkleRoot,
             tasksInclusionProofs,
             resultsInclusionProofs,
             tasksCommitments,
-            results,
+            rawResults,
         ]
       );
       console.log(abiEncodedResult);
