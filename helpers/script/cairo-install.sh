@@ -49,5 +49,5 @@ python3.9 -m venv "$VENV_PATH"
 echo 'export PYTHONPATH="$PWD:$PYTHONPATH"' >> "$VENV_PATH/bin/activate"
 source "$VENV_PATH/bin/activate"
 pip install -r ./requirements.txt
-pip install hdp-cairo-dev==0.0.3
+pip install hdp-cairo-dev==0.0.5
 pnpm install
