@@ -69,14 +69,17 @@ contract HdpExecutionStore is AccessControl {
     /// @notice interface to the facts registry of SHARP
     IFactsRegistry public immutable SHARP_FACTS_REGISTRY;
 
+    /// @notice constant representing the chain id of Sepolia
+    uint256 public constant SEPOLIA_CHAIN_ID = 11155111;
+
     /// @notice interface to the aggregators factory
     IAggregatorsFactory public immutable AGGREGATORS_FACTORY;
 
     /// @notice mapping of task result hash => task
     mapping(bytes32 => TaskResult) public cachedTasksResult;
 
-    /// @notice mapping of mmr id => mmr size => mmr root
-    mapping(uint256 => mapping(uint256 => bytes32)) public cachedMMRsRoots;
+    /// @notice mapping of chain id => mmr id => mmr size => mmr root
+    mapping(uint256 => mapping(uint256 => mapping(uint256 => bytes32))) public cachedMMRsRoots;
 
     constructor(IFactsRegistry factsRegistry, IAggregatorsFactory aggregatorsFactory, bytes32 programHash) {
         SHARP_FACTS_REGISTRY = factsRegistry;
@@ -98,7 +101,7 @@ contract HdpExecutionStore is AccessControl {
     function cacheMmrRoot(uint256 mmrId) public {
         ISharpFactsAggregator aggregator = AGGREGATORS_FACTORY.aggregatorsById(mmrId);
         ISharpFactsAggregator.AggregatorState memory aggregatorState = aggregator.aggregatorState();
-        cachedMMRsRoots[mmrId][aggregatorState.mmrSize] = aggregatorState.poseidonMmrRoot;
+        cachedMMRsRoots[SEPOLIA_CHAIN_ID][mmrId][aggregatorState.mmrSize] = aggregatorState.poseidonMmrRoot;
 
         emit MmrRootCached(mmrId, aggregatorState.mmrSize, aggregatorState.poseidonMmrRoot);
     }
@@ -147,8 +150,8 @@ contract HdpExecutionStore is AccessControl {
 
     /// @notice Authenticates the execution of a task is finalized
     ///     by verifying the FactRegistry and Merkle proofs
-    /// @param usedMmrId The id of the MMR used to compute task
-    /// @param usedMmrSize The size of the MMR used to compute task
+    /// @param mmrIds The id of the MMR used to compute task
+    /// @param mmrSizes The size of the MMR used to compute task
     /// @param taskMerkleRootLow The low 128 bits of the tasks Merkle root
     /// @param taskMerkleRootHigh The high 128 bits of the tasks Merkle root
     /// @param resultMerkleRootLow The low 128 bits of the results Merkle root
@@ -158,8 +161,8 @@ contract HdpExecutionStore is AccessControl {
     /// @param taskCommitments The commitment of the tasks
     /// @param taskResults The result of the computational tasks
     function authenticateTaskExecution(
-        uint256 usedMmrId,
-        uint256 usedMmrSize,
+        uint256[] calldata mmrIds,
+        uint256[] calldata mmrSizes,
         uint256 taskMerkleRootLow,
         uint256 taskMerkleRootHigh,
         uint256 resultMerkleRootLow,
@@ -169,19 +172,24 @@ contract HdpExecutionStore is AccessControl {
         bytes32[] calldata taskCommitments,
         bytes32[] calldata taskResults
     ) external onlyOperator {
-        // Load MMRs root
-        bytes32 usedMmrRoot = loadMmrRoot(usedMmrId, usedMmrSize);
+        assert (mmrIds.length == mmrSizes.length);
 
         // Initialize an array of uint256 to store the program output
-        uint256[] memory programOutput = new uint256[](6);
+        uint256[] memory programOutput = new uint256[](4 + mmrIds.length * 4);
 
         // Assign values to the program output array
-        programOutput[0] = uint256(usedMmrRoot);
-        programOutput[1] = usedMmrSize;
-        programOutput[2] = resultMerkleRootLow;
-        programOutput[3] = resultMerkleRootHigh;
-        programOutput[4] = taskMerkleRootLow;
-        programOutput[5] = taskMerkleRootHigh;
+        programOutput[0] = resultMerkleRootLow;
+        programOutput[1] = resultMerkleRootHigh;
+        programOutput[2] = taskMerkleRootLow;
+        programOutput[3] = taskMerkleRootHigh;
+
+        for (uint8 i = 0; i < mmrIds.length; i++) {
+            bytes32 usedMmrRoot = loadMmrRoot(mmrIds[i], mmrSizes[i]);
+            programOutput[4 + i * 4] = mmrIds[i];
+            programOutput[4 + i * 4 + 1] = mmrSizes[i];
+            programOutput[4 + i * 4 + 2] = SEPOLIA_CHAIN_ID;
+            programOutput[4 + i * 4 + 3] = uint256(usedMmrRoot);
+        }
 
         // Compute program output hash
         bytes32 programOutputHash = keccak256(abi.encodePacked(programOutput));
@@ -232,7 +240,7 @@ contract HdpExecutionStore is AccessControl {
 
     /// @notice Load MMR root from cache with given mmrId and mmrSize
     function loadMmrRoot(uint256 mmrId, uint256 mmrSize) public view returns (bytes32) {
-        return cachedMMRsRoots[mmrId][mmrSize];
+        return cachedMMRsRoots[SEPOLIA_CHAIN_ID][mmrId][mmrSize];
     }
 
     /// @notice Returns the result of a finalized task

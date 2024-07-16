@@ -59,9 +59,9 @@ contract HdpExecutionStoreTest is Test {
 
     // Cached fetched data from input
     bytes32 programHash;
-    uint256 fetchedMmrId;
-    uint256 fetchedMmrSize;
-    bytes32 fetchedMmrRoot;
+    uint256[] fetchedMmrIds;
+    uint256[] fetchedMmrSizes;
+    bytes32[] fetchedMmrRoots;
     bytes32 fetchedResultsMerkleRoot;
     bytes32 fetchedTasksMerkleRoot;
     bytes32[][] fetchedResultsInclusionProofs;
@@ -103,9 +103,9 @@ contract HdpExecutionStoreTest is Test {
 
         // Parse from input file
         (
-            fetchedMmrId,
-            fetchedMmrSize,
-            fetchedMmrRoot,
+            fetchedMmrIds,
+            fetchedMmrSizes,
+            fetchedMmrRoots,
             fetchedTasksMerkleRoot,
             fetchedResultsMerkleRoot,
             fetchedTasksInclusionProofs,
@@ -120,10 +120,10 @@ contract HdpExecutionStoreTest is Test {
         assertEq(fetchedTasksCommitments[0], computedTaskCommitment);
 
         // Mock SHARP facts aggregator
-        sharpFactsAggregator = new MockSharpFactsAggregator(fetchedMmrRoot, fetchedMmrSize);
+        sharpFactsAggregator = new MockSharpFactsAggregator(fetchedMmrRoots[0], fetchedMmrSizes[0]);
 
         // Create mock SHARP facts aggregator
-        aggregatorsFactory.createAggregator(fetchedMmrId, sharpFactsAggregator);
+        aggregatorsFactory.createAggregator(fetchedMmrIds[0], sharpFactsAggregator);
         assertTrue(hdp.hasRole(keccak256("OPERATOR_ROLE"), address(this)));
         hdp.grantRole(keccak256("OPERATOR_ROLE"), proverAddress);
     }
@@ -135,8 +135,9 @@ contract HdpExecutionStoreTest is Test {
             Uint256Splitter.split128(uint256(bytes32(fetchedResultsMerkleRoot)));
 
         // Cache MMR root
-        hdp.cacheMmrRoot(fetchedMmrId);
-
+        for(uint i = 0; i < fetchedMmrIds.length; i++) {
+            hdp.cacheMmrRoot(fetchedMmrIds[i]);
+        }
         // Compute fact hash from PIE file
         bytes32 factHash = _computeFactHash();
 
@@ -149,8 +150,8 @@ contract HdpExecutionStoreTest is Test {
         // If valid, Store the task result
         vm.prank(proverAddress);
         hdp.authenticateTaskExecution(
-            fetchedMmrId,
-            fetchedMmrSize,
+            fetchedMmrIds,
+            fetchedMmrSizes,
             taskRootLow,
             taskRootHigh,
             resultRootLow,
@@ -217,9 +218,9 @@ contract HdpExecutionStoreTest is Test {
     function _fetchCairoInput()
         internal
         returns (
-            uint256 usedMmrId,
-            uint256 usedMmrSize,
-            bytes32 usedMmrRoot,
+            uint256[] memory usedMmrIds,
+            uint256[] memory usedMmrSizes,
+            bytes32[] memory usedMmrRoots,
             bytes32 tasksMerkleRoot,
             bytes32 resultsMerkleRoot,
             bytes32[][] memory tasksInclusionProofs,
@@ -234,9 +235,9 @@ contract HdpExecutionStoreTest is Test {
         inputs[2] = "bs";
         bytes memory abiEncoded = vm.ffi(inputs);
         (
-            usedMmrId,
-            usedMmrSize,
-            usedMmrRoot,
+            usedMmrIds,
+            usedMmrSizes,
+            usedMmrRoots,
             tasksMerkleRoot,
             resultsMerkleRoot,
             tasksInclusionProofs,
@@ -244,7 +245,7 @@ contract HdpExecutionStoreTest is Test {
             tasksCommitments,
             taskResults
         ) = abi.decode(
-            abiEncoded, (uint256, uint256, bytes32, bytes32, bytes32, bytes32[][], bytes32[][], bytes32[], bytes32[])
+            abiEncoded, (uint256[], uint256[], bytes32[], bytes32, bytes32, bytes32[][], bytes32[][], bytes32[], bytes32[])
         );
     }
 }
