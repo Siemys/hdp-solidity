@@ -1,4 +1,3 @@
-cairo-lang==0.13.1
 aiofiles==23.2.1
 typeguard==2.13.3
 protobuf==3.20.3
