@@ -44,12 +44,8 @@ jobs:
         id: build
       - name: Run Setup
         run: |
-          make cairo-install && make cairo1-install
+          make cairo-install
         id: setup
-      - name: Cairo run
-        run: |
-          make cairo-run
-        id: script
       - name: Run Forge tests
         run: |
           source venv/bin/activate && forge test -vvv
