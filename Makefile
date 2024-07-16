@@ -1,6 +1,6 @@
 compile: 
 	@echo "Cairo Compile..."
-	cairo-hash-program --program helpers/target/hdp.json
+	cairo-hash-program --program build/compiled_cairo/hdp.json
 
 hdp-run:
 	@echo "Installing hdp binary..."
