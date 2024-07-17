@@ -69,8 +69,8 @@ contract HdpExecutionStore is AccessControl {
     /// @notice interface to the facts registry of SHARP
     IFactsRegistry public immutable SHARP_FACTS_REGISTRY;
 
-    /// @notice constant representing the chain id of Sepolia
-    uint256 public constant SEPOLIA_CHAIN_ID = 11155111;
+    /// @notice immutable representing the chain id
+    uint256 public immutable CHAIN_ID;
 
     /// @notice interface to the aggregators factory
     IAggregatorsFactory public immutable AGGREGATORS_FACTORY;
@@ -85,6 +85,7 @@ contract HdpExecutionStore is AccessControl {
         SHARP_FACTS_REGISTRY = factsRegistry;
         AGGREGATORS_FACTORY = aggregatorsFactory;
         PROGRAM_HASH = programHash;
+        CHAIN_ID = block.chainid;
 
         _setRoleAdmin(OPERATOR_ROLE, OPERATOR_ROLE);
         _grantRole(OPERATOR_ROLE, _msgSender());
@@ -101,7 +102,7 @@ contract HdpExecutionStore is AccessControl {
     function cacheMmrRoot(uint256 mmrId) public {
         ISharpFactsAggregator aggregator = AGGREGATORS_FACTORY.aggregatorsById(mmrId);
         ISharpFactsAggregator.AggregatorState memory aggregatorState = aggregator.aggregatorState();
-        cachedMMRsRoots[SEPOLIA_CHAIN_ID][mmrId][aggregatorState.mmrSize] = aggregatorState.poseidonMmrRoot;
+        cachedMMRsRoots[CHAIN_ID][mmrId][aggregatorState.mmrSize] = aggregatorState.poseidonMmrRoot;
 
         emit MmrRootCached(mmrId, aggregatorState.mmrSize, aggregatorState.poseidonMmrRoot);
     }
@@ -172,7 +173,7 @@ contract HdpExecutionStore is AccessControl {
         bytes32[] calldata taskCommitments,
         bytes32[] calldata taskResults
     ) external onlyOperator {
-        assert (mmrIds.length == mmrSizes.length);
+        assert(mmrIds.length == mmrSizes.length);
 
         // Initialize an array of uint256 to store the program output
         uint256[] memory programOutput = new uint256[](4 + mmrIds.length * 4);
@@ -187,7 +188,7 @@ contract HdpExecutionStore is AccessControl {
             bytes32 usedMmrRoot = loadMmrRoot(mmrIds[i], mmrSizes[i]);
             programOutput[4 + i * 4] = mmrIds[i];
             programOutput[4 + i * 4 + 1] = mmrSizes[i];
-            programOutput[4 + i * 4 + 2] = SEPOLIA_CHAIN_ID;
+            programOutput[4 + i * 4 + 2] = CHAIN_ID;
             programOutput[4 + i * 4 + 3] = uint256(usedMmrRoot);
         }
 
@@ -240,7 +241,7 @@ contract HdpExecutionStore is AccessControl {
 
     /// @notice Load MMR root from cache with given mmrId and mmrSize
     function loadMmrRoot(uint256 mmrId, uint256 mmrSize) public view returns (bytes32) {
-        return cachedMMRsRoots[SEPOLIA_CHAIN_ID][mmrId][mmrSize];
+        return cachedMMRsRoots[CHAIN_ID][mmrId][mmrSize];
     }
 
     /// @notice Returns the result of a finalized task

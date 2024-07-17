@@ -85,6 +85,7 @@ contract HdpExecutionStoreTest is Test {
     });
 
     function setUp() public {
+        vm.chainId(11155111);
         // Registery for facts that has been processed through SHARP
         factsRegistry = new MockFactsRegistry();
         // Factory for creating SHARP facts aggregators
@@ -135,7 +136,7 @@ contract HdpExecutionStoreTest is Test {
             Uint256Splitter.split128(uint256(bytes32(fetchedResultsMerkleRoot)));
 
         // Cache MMR root
-        for(uint i = 0; i < fetchedMmrIds.length; i++) {
+        for (uint256 i = 0; i < fetchedMmrIds.length; i++) {
             hdp.cacheMmrRoot(fetchedMmrIds[i]);
         }
         // Compute fact hash from PIE file
@@ -245,7 +246,8 @@ contract HdpExecutionStoreTest is Test {
             tasksCommitments,
             taskResults
         ) = abi.decode(
-            abiEncoded, (uint256[], uint256[], bytes32[], bytes32, bytes32, bytes32[][], bytes32[][], bytes32[], bytes32[])
+            abiEncoded,
+            (uint256[], uint256[], bytes32[], bytes32, bytes32, bytes32[][], bytes32[][], bytes32[], bytes32[])
         );
     }
 }
