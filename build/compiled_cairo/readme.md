@@ -1,11 +1,11 @@
 ### Pedersen Program Hash
 
 ```
-0x851702bd047fca42ecf3d0871fd770d4d72a0d1cd669740cafc1bb693d9327
+0x577fe548d4fc1586bad5fda44b06c5c211a4a81afd4fbce5f7b832338b04a38
 ```
 
 ### Solidity Contract
 
 ```
-0xF17f85162f507d002F8561a90D72c74c08583e4B
+0x8987029CB21e77D23B53193bbcb56BcEE9259F54
 ```
